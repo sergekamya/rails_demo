@@ -11,6 +11,7 @@ gem "bootsnap", ">= 1.4.4", require: false
 gem "rack-cors", require: "rack/cors"
 
 group :development, :test do
+  gem "simplecov", require: false
   gem "rspec-rails"
   gem "shoulda-matchers"
   gem "factory_bot_rails"
