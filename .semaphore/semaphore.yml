@@ -5,9 +5,31 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 blocks:
-  - name: 'Block #1'
+  - name: Rails_Demo
     task:
       jobs:
-        - name: 'Job #1'
+        - name: Test
           commands:
             - checkout
+            - sem-service start postgres 11
+            - sem-version ruby 3.0.0
+            - 'curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter'
+            - chmod +x ./cc-test-reporter
+            - ./cc-test-reporter before-build
+            - bundle update --bundler
+            - bundle install
+            - 'bundle exec rails db:create db:migrate'
+            - bundle exec rspec
+      env_vars:
+        - name: CC_TEST_REPORTER_ID
+          value: 48b0e429994c0b6654e89cca9e624a86c256c37b40aa44b3631e1931d4d36bc5
+      epilogue:
+        always:
+          commands:
+            - ./cc-test-reporter format-coverage -t simplecov -o coverage/.resultset.json
+        on_pass:
+          commands:
+            - ./cc-test-reporter after-build --exit-code 0
+        on_fail:
+          commands:
+            - ./cc-test-reporter after-build --exit-code 1
